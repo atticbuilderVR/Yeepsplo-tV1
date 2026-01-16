@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yeepsploit</title>
+    <style>
+        /* Keep the same overall style (black header, white title, navajowhite links area)
+           but fix layout, semantics and CSS syntax errors. */
+        :root {
+            --header-height: 51px;
+            --page-width: 81vw;
+            --container-max: 1000px;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background-color: #f4f4f4;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            color: #222;
+            display: flex;
+            justify-content: center;
+        }
+
+        .page {
+            width: var(--page-width);
+            max-width: var(--container-max);
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+        }
+
+        /* Header (keeps black background and white centered title) */
+        #app {
+            width: 100%;
+            height: var(--header-height);
+            background-color: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            padding: 0 12px;
+            border-radius: 4px;
+        }
+
+        #app h1 {
+            color: white;
+            text-align: center;
+            line-height: var(--header-height);
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        /* Description below the header */
+        #desc {
+            margin: 0;
+            padding: 0 8px;
+            color: #333;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        /* Links area — previously #s (navajowhite). Use a class for repeatable items. */
+        .links {
+            width: 100%;
+            background-color: navajowhite;
+            padding: 14px;
+            box-sizing: border-box;
+            border-radius: 6px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .links a.s {
+            color: #111;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.06);
+            font-weight: 600;
+        }
+
+        .links a.s[download] {
+            /* small visual hint that this is a download */
+            background: rgba(0,0,0,0.06);
+        }
+
+        /* Responsive tweaks */
+        @media (max-width: 520px) {
+            .page {
+                width: calc(100% - 24px);
+            }
+            #app h1 {
+                font-size: 1.1rem;
+            }
+            .links {
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page" role="main">
+        <header id="app" role="banner">
+            <h1>Yeepsploit</h1>
+        </header>
+
+        <p id="desc">The official website for Yeepsploit, the CLI based modding tool</p>
+
+        <nav class="links" aria-label="Yeepsploit links">
+            <a class="s" href="https://www.yeeps.com" target="_blank" rel="noopener">Original Website</a>
+            <a class="s" href="YeepsploitSetup.exe" download="YeepsploitSetup.exe">YeepsploitSetup.exe</a>
+            <a class="s" href="https://github.com/atticbuilderVR/Yeepsploit" target="_blank" rel="noopener">GitHub Repository</a>
+            <a class="s" href="https://discord.gg/yeeps" target="_blank" rel="noopener">Yeeps Discord Server</a>
+            <a class="s" href="https://www.youtube.com/@Im-Skeptical" target="_blank" rel="noopener">Youtube</a>
+            <a class="s" href="DashboardInstaller.exe" download="DashboardInstaller.exe">Yeepsploit Dashboard (beta)</a>
+        </nav>
+    </main>
+</body>
+</html>
