@@ -1,132 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yeepsploit</title>
-    <style>
-        /* Keep the same overall style (black header, white title, navajowhite links area)
-           but fix layout, semantics and CSS syntax errors. */
-        :root {
-            --header-height: 51px;
-            --page-width: 81vw;
-            --container-max: 1000px;
-        }
-
-        html, body {
-            height: 100%;
-        }
-
-        body {
-            margin: 0;
-            background-color: #f4f4f4;
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-            color: #222;
-            display: flex;
-            justify-content: center;
-        }
-
-        .page {
-            width: var(--page-width);
-            max-width: var(--container-max);
-            margin: 20px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 18px;
-        }
-
-        /* Header (keeps black background and white centered title) */
-        #app {
-            width: 100%;
-            height: var(--header-height);
-            background-color: black;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-            padding: 0 12px;
-            border-radius: 4px;
-        }
-
-        #app h1 {
-            color: white;
-            text-align: center;
-            line-height: var(--header-height);
-            margin: 0;
-            font-size: 1.4rem;
-            font-weight: 700;
-        }
-
-        /* Description below the header */
-        #desc {
-            margin: 0;
-            padding: 0 8px;
-            color: #333;
-            text-align: center;
-            max-width: 90%;
-        }
-
-        /* Links area — previously #s (navajowhite). Use a class for repeatable items. */
-        .links {
-            width: 100%;
-            background-color: navajowhite;
-            padding: 14px;
-            box-sizing: border-box;
-            border-radius: 6px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px 20px;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .links a.s {
-            color: #111;
-            text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            background: rgba(0,0,0,0.03);
-            border: 1px solid rgba(0,0,0,0.06);
-            font-weight: 600;
-        }
-
-        .links a.s[download] {
-            /* small visual hint that this is a download */
-            background: rgba(0,0,0,0.06);
-        }
-
-        /* Responsive tweaks */
-        @media (max-width: 520px) {
-            .page {
-                width: calc(100% - 24px);
-            }
-            #app h1 {
-                font-size: 1.1rem;
-            }
-            .links {
-                gap: 10px;
-            }
-        }
-    </style>
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <main class="page" role="main">
-        <header id="app" role="banner">
-            <h1>Yeepsploit</h1>
-        </header>
+    <div id="app">
+        <h1>Yeepsploit</h1>
+    </div>
 
-        <p id="desc">The official website for Yeepsploit, the CLI based modding tool</p>
+    <div id="links">
+        <a href="https://www.yeeps.com" target="_blank">Original Website</a>
+        <a download="YeepsploitSetup.exe" href="YeepsploitSetup.exe">YeepsploitSetup.exe</a>
+        <a href="https://github.com/atticbuilderVR/Yeepsploit" target="_blank">GitHub Repository</a>
+        <a href="https://discord.gg/yeeps" target="_blank">Yeeps Discord Server</a>
+        <a href="https://www.youtube.com/@Im-Skeptical" target="_blank">YouTube</a>
+    </div>
 
-        <nav class="links" aria-label="Yeepsploit links">
-            <a class="s" href="https://www.yeeps.com" target="_blank" rel="noopener">Original Website</a>
-            <a class="s" href="YeepsploitSetup.exe" download="YeepsploitSetup.exe">YeepsploitSetup.exe</a>
-            <a class="s" href="https://github.com/atticbuilderVR/Yeepsploit" target="_blank" rel="noopener">GitHub Repository</a>
-            <a class="s" href="https://discord.gg/yeeps" target="_blank" rel="noopener">Yeeps Discord Server</a>
-            <a class="s" href="https://www.youtube.com/@Im-Skeptical" target="_blank" rel="noopener">Youtube</a>
-            <a class="s" href="https://sourceforge.net/projects/yeepsploitdashboard/">Yeepsploit Dashboard (beta)</a>
-        </nav>
-    </main>
+    <!-- Wiki Section -->
+    <div id="wiki">
+        <h2>Yeepsploit Wiki</h2>
+
+        <div id="wiki-list">Loading wiki...</div>
+
+        <h3>Add / Edit Wiki Page</h3>
+        <input id="wiki-title" placeholder="Page title" />
+        <textarea id="wiki-content" placeholder="Wiki content"></textarea>
+        <button onclick="saveWiki()">Save</button>
+    </div>
+
+<script>
+    // 🔴 REPLACE THESE WITH YOUR SUPABASE PROJECT DETAILS
+    const SUPABASE_URL = "https://tbxtkkljtpjvudmamtoj.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieHRra2xqdHBqdnVkbWFtdG9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyOTQ1MTUsImV4cCI6MjA4NTg3MDUxNX0.l4vjtpUq5yqInEH0wsXwzclZf9pPyDBGbebfg9u_eG4";
+
+    const supabase = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+    );
+
+    async function loadWiki() {
+        const { data, error } = await supabase
+            .from('wiki')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        const list = document.getElementById('wiki-list');
+        list.innerHTML = '';
+
+        if (error) {
+            list.textContent = 'Failed to load wiki';
+            return;
+        }
+
+        if (!data.length) {
+            list.textContent = 'No wiki pages yet.';
+            return;
+        }
+
+        data.forEach(page => {
+            const div = document.createElement('div');
+            div.className = 'wiki-page';
+            div.innerHTML = `<h4>${page.title}</h4><p>${page.content}</p>`;
+            list.appendChild(div);
+        });
+    }
+
+    async function saveWiki() {
+        const title = document.getElementById('wiki-title').value.trim();
+        const content = document.getElementById('wiki-content').value.trim();
+
+        if (!title || !content) return alert('Title and content required');
+
+        const { error } = await supabase
+            .from('wiki')
+            .insert([{ title, content }]);
+
+        if (error) {
+            alert('Error saving wiki');
+        } else {
+            document.getElementById('wiki-title').value = '';
+            document.getElementById('wiki-content').value = '';
+            loadWiki();
+        }
+    }
+
+    loadWiki();
+</script>
+
+<style>
+    body {
+        margin: 0;
+        background-color: #111;
+        color: white;
+        font-family: Arial, sans-serif;
+    }
+
+    #app {
+        width: 100%;
+        height: 60px;
+        background-color: black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #links {
+        margin: 30px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    #links a {
+        color: #00ffd5;
+        text-decoration: none;
+    }
+
+    #wiki {
+        margin: 30px;
+        padding: 20px;
+        background: #1b1b1b;
+        border-radius: 8px;
+    }
+
+    #wiki textarea {
+        width: 100%;
+        height: 120px;
+        margin-top: 10px;
+    }
+
+    #wiki input {
+        width: 100%;
+        padding: 8px;
+        margin-top: 10px;
+    }
+
+    button {
+        margin-top: 10px;
+        padding: 10px;
+        cursor: pointer;
+    }
+
+    .wiki-page {
+        margin-bottom: 20px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 10px;
+    }
+</style>
 </body>
 </html>
 
