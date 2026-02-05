@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yeepsploit</title>
     <!-- Supabase JS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.7/dist/umd/supabase.js"></script>
 </head>
 <body>
     <div id="app">
@@ -37,13 +37,13 @@
     const SUPABASE_URL = "https://tbxtkkljtpjvudmamtoj.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieHRra2xqdHBqdnVkbWFtdG9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyOTQ1MTUsImV4cCI6MjA4NTg3MDUxNX0.l4vjtpUq5yqInEH0wsXwzclZf9pPyDBGbebfg9u_eG4";
 
-    const supabase = window.supabase.createClient(
+    const supabaseClient = window.supabase.createClient(
         SUPABASE_URL,
         SUPABASE_ANON_KEY
     );
 
-    async function loadWiki() {
-        const { data, error } = await supabase
+    window.loadWiki = async function loadWiki() {
+        const { data, error } = await supabaseClient
             .from('wiki')
             .select('*')
             .order('created_at', { ascending: false });
@@ -69,13 +69,13 @@
         });
     }
 
-    async function saveWiki() {
+    window.saveWiki = async function saveWiki() {
         const title = document.getElementById('wiki-title').value.trim();
         const content = document.getElementById('wiki-content').value.trim();
 
         if (!title || !content) return alert('Title and content required');
 
-        const { error } = await supabase
+        const { error } = await supabaseClientClient
             .from('wiki')
             .insert([{ title, content }]);
 
@@ -153,5 +153,6 @@
 </style>
 </body>
 </html>
+<html></html>
 
 
