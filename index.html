@@ -6,90 +6,175 @@
     <title>Yeepsploit</title>
     <!-- Supabase JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <div id="app">
         <h1>Yeepsploit</h1>
     </div>
+    <!-- Create webhooks -->
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = "https://tbxtkkljtpjvudmamtoj.supabase.co";
+        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieHRra2xqdHBqdnVkbWFtdG9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyOTQ1MTUsImV4cCI6MjA4NTg3MDUxNX0.l4vjtpUq5yqInEH0wsXwzclZf9pPyDBGbebfg9u_eG4"; // Please replace with your actual Supabase Anon Key
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+        fetch("https://n8n.srv1265204.hstgr.cloud/webhook-test/54f81b6b-9a0c-403b-b5a1-566643610283", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: "Yeepsploit page loaded" })
+        })
+        .then(res => console.log("Webhook sent"))
+        .catch(err => console.error("Webhook failed", err));
+
+        function sendSupportWebhook(event) {
+            event.preventDefault();
+            document.getElementById('support-modal').style.display = 'block';
+        }
+
+        function closeSupportModal() {
+            document.getElementById('support-modal').style.display = 'none';
+        }
+
+        function submitSupport() {
+            const issue = document.getElementById('support-msg').value;
+            const phone = document.getElementById('support-phone').value;
+            if (issue) {
+                fetch("https://n8n.srv1265204.hstgr.cloud/webhook-test/54f81b6b-9a0c-403b-b5a1-566643610283", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        action: "support_request",
+                        message: issue,
+                        phone: phone,
+                        service: "vonage",
+                        ai_model: "ollama gemma3:4b"
+                    })
+                })
+                .then(res => {
+                    alert("Support request sent!");
+                    closeSupportModal();
+                })
+                .catch(err => alert("Error sending support request"));
+            }
+        }
+
+        async function fetchWikiPages() {
+            const { data, error } = await supabaseClient
+                .from('wiki')
+                .select('*');
+
+            if (error) console.error("Error fetching wiki:", error);
+
+            if (!error && data) {
+                const container = document.getElementById('wiki-pages');
+                container.innerHTML = '';
+                data.forEach(page => {
+                    const div = document.createElement('div');
+                    div.className = 'wiki-page';
+                    div.innerHTML = `<h3>${page.title}</h3><p>${page.content}</p>
+                        <button onclick="deleteWikiPage(${page.id})" style="background-color: #d9534f; color: white; border: none; padding: 5px 10px; border-radius: 3px;">Delete</button>`;
+                    container.appendChild(div);
+                });
+            }
+        }
+
+        async function addWikiPage() {
+            const titleInput = document.querySelector('#wiki input');
+            const contentInput = document.querySelector('#wiki textarea');
+            const title = titleInput.value;
+            const content = contentInput.value;
+
+            if (title && content) {
+                const { error } = await supabaseClient
+                    .from('wiki')
+                    .insert([{ title: title, content: content }]);
+
+                if (error) {
+                    alert("Error adding page: " + error.message);
+                } else {
+                    alert("Wiki page submitted: " + title);
+                    titleInput.value = "";
+                    contentInput.value = "";
+                    fetchWikiPages();
+                }
+            }
+        }
+
+        async function deleteWikiPage(id) {
+            if (confirm("Are you sure you want to delete this page?")) {
+                const { error } = await supabaseClient
+                    .from('wiki')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) alert("Error deleting page: " + error.message);
+                else fetchWikiPages();
+            }
+        }
+
+        async function handleCredentialResponse(response) {
+            // Step 1: Sign in to Supabase with the Google ID token
+            const { data, error } = await supabaseClient.auth.signInWithIdToken({
+                provider: 'google',
+                token: response.credential,
+            });
+
+            if (error) {
+                console.error("Supabase login failed:", error);
+                return alert("Error logging in with Google.");
+            }
+
+            // Step 2 (Optional): Send the ID token to your n8n webhook
+            fetch("https://n8n.srv1265204.hstgr.cloud/webhook-test/54f81b6b-9a0c-403b-b5a1-566643610283", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    action: "google_login",
+                    user_email: data.user.email // You can now access user data
+                })
+            })
+            .then(res => alert("Logged in with Google!"))
+            .catch(err => console.error("Login webhook failed", err));
+        }
+
+        // Load wiki pages on start
+        fetchWikiPages();
+    </script>
     <div id="links">
         <a href="https://www.yeeps.com" target="_blank">Original Website</a>
         <a download="YeepsploitSetup.exe" href="YeepsploitSetup.exe">YeepsploitSetup.exe</a>
         <a href="https://github.com/atticbuilderVR/Yeepsploit" target="_blank">GitHub Repository</a>
         <a href="https://discord.gg/yeeps" target="_blank">Yeeps Discord Server</a>
         <a href="https://www.youtube.com/@Im-Skeptical" target="_blank">YouTube</a>
+        <a href="#" onclick="sendSupportWebhook(event)">Support</a>
+
+        <!-- Google Sign-In -->
+        <div id="g_id_onload"
+             data-client_id="233046650664-6ss8seq6u8cl2sohqth12t1phbu1s8rd.apps.googleusercontent.com"
+             data-callback="handleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin" data-type="standard"></div>
     </div>
 
-    <!-- Wiki Section -->
     <div id="wiki">
-        <h2>Yeepsploit Wiki</h2>
-
-        <div id="wiki-list">Loading wiki...</div>
-
-        <h3>Add / Edit Wiki Page</h3>
-        <input id="wiki-title" placeholder="Page title" />
-        <textarea id="wiki-content" placeholder="Wiki content"></textarea>
-        <button onclick="saveWiki()">Send</button>
+        <h2>Wiki</h2>
+        <div id="wiki-pages"></div>
+        <input type="text" placeholder="Page Title">
+        <textarea placeholder="Page Content"></textarea>
+        <button onclick="addWikiPage()">Add Page</button>
     </div>
 
-<script>
-    // 🔴 REPLACE THESE WITH YOUR SUPABASE PROJECT DETAILS
-    const SUPABASE_URL = "https://tbxtkkljtpjvudmamtoj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieHRra2xqdHBqdnVkbWFtdG9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyOTQ1MTUsImV4cCI6MjA4NTg3MDUxNX0.l4vjtpUq5yqInEH0wsXwzclZf9pPyDBGbebfg9u_eG4";
-
-    const supabase = window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY
-    );
-
-    async function loadWiki() {
-        const { data, error } = await supabase
-            .from('wiki')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        const list = document.getElementById('wiki-list');
-        list.innerHTML = '';
-
-        if (error) {
-            list.textContent = 'Failed to load wiki';
-            return;
-        }
-
-        if (!data.length) {
-            list.textContent = 'No wiki pages yet.';
-            return;
-        }
-
-        data.forEach(page => {
-            const div = document.createElement('div');
-            div.className = 'wiki-page';
-            div.innerHTML = `<h4>${page.title}</h4><p>${page.content}</p>`;
-            list.appendChild(div);
-        });
-    }
-
-    async function saveWiki() {
-        const title = document.getElementById('wiki-title').value.trim();
-        const content = document.getElementById('wiki-content').value.trim();
-
-        if (!title || !content) return alert('Title and content required');
-
-        const { error } = await supabase
-            .from('wiki')
-            .insert([{ title, content }]);
-
-        if (error) {
-            alert('Error saving wiki');
-        } else {
-            document.getElementById('wiki-title').value = '';
-            document.getElementById('wiki-content').value = '';
-            loadWiki();
-        }
-    }
-
-    loadWiki();
-</script>
+    <div id="support-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSupportModal()">&times;</span>
+            <h2>Contact Support</h2>
+            <input type="text" id="support-phone" placeholder="Phone Number (for Vonage)">
+            <textarea id="support-msg" placeholder="Describe your issue..."></textarea>
+            <button onclick="submitSupport()">Send Request</button>
+        </div>
+    </div>
 
 <style>
     body {
@@ -150,8 +235,45 @@
         border-bottom: 1px solid #333;
         padding-bottom: 10px;
     }
+
+    .modal {
+        display: none; 
+        position: fixed; 
+        z-index: 1; 
+        left: 0;
+        top: 0;
+        width: 100%; 
+        height: 100%; 
+        background-color: rgba(0,0,0,0.8);
+    }
+
+    .modal-content {
+        background-color: #1b1b1b;
+        margin: 15% auto; 
+        padding: 20px; 
+        border: 1px solid #888;
+        width: 80%; 
+        max-width: 500px;
+        border-radius: 8px;
+    }
+
+    .modal-content input, .modal-content textarea {
+        width: 100%;
+        padding: 8px;
+        margin-top: 10px;
+        box-sizing: border-box;
+        background: #333;
+        color: white;
+        border: 1px solid #555;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
 </style>
 </body>
 </html>
-
-
